@@ -32,14 +32,16 @@ def extract_job(html):
             company = str(company.string)
         company = company.strip()
     else:
-        conpany=None
+        company=None
     location = html.find("div", {"class": "companyLocation"}).text
+    if location is None:
+        location = '.'
     job_id = html["data-jk"]
     return {
         'title': title,
         'company': company,
         'location': location,
-        "link": f"https://www.indeed.com/viewjob?jk={job_id} "
+        "apply_link": f"https://www.indeed.com/viewjob?jk={job_id} "
     }
     
 
@@ -47,7 +49,7 @@ def extract_job(html):
 def extract_jobs(last_page):
     jobs = []
     for page in range(last_page):
-        print(f"Scrapping page {page}")
+        print(f"Scrapping page {page+1}")
         result = requests.get(f"{URL}&start={page*LIMIT}")
         soup = BeautifulSoup(result.text, "html.parser")
         results = soup.find_all("a", {"class": "fs-unmask"})

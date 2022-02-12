@@ -12,9 +12,9 @@ def get_last_page():
     return int(last_page)
 
 def extract_job(html):    
-    title = html.find('a', {'class':'s-link stretched-link'})
+    title = html.find("h2", {"class": "mb4"}).find("a")["title"]
     if title is not None:
-        title = html.find('a', {'class':'s-link stretched-link'}).string
+        title = html.find("h2", {"class": "mb4"}).find("a")["title"]
     
     company = html.find("h3", {"class":"fc-black-700 fs-body1 mb4"})
     location = html.find("h3", {"class":"fc-black-700 fs-body1 mb4"})
@@ -22,9 +22,12 @@ def extract_job(html):
         company, location = html.find("h3", {"class":"fc-black-700 fs-body1 mb4"}).find_all("span", recursive=False)
 
     company = company.get_text(strip=True)
-    location = location.get_text(strip=True)
+    if location is None:
+        location = '.'
+    else:
+        location = location.get_text(strip=True)
 
-    job_id = html.find('div')['data-jobid']
+    job_id = html['data-jobid']
 
     return {
         'title':title,
@@ -39,7 +42,7 @@ def extract_jobs(last_page):
         print(f"Scrapping page {page}")
         result = requests.get(f'{URL}&pg={page+1}',str(headers))
         soup = BeautifulSoup(result.text, 'html.parser')
-        results = soup.find_all('div', {'class':'listResults'})
+        results = soup.find_all('div',{'class':'-job'})
         for result in results:
             job = extract_job(result)
             jobs.append(job)
