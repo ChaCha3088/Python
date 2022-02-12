@@ -14,8 +14,24 @@ def get_last_page():
 def extract_job(html):    
     title = html.find('a', {'class':'s-link stretched-link'})
     if title is not None:
-        title = html.find('a', {'class':'s-link stretched-link'}).get_text()
-    return {'title':title}
+        title = html.find('a', {'class':'s-link stretched-link'}).string
+    
+    company = html.find("h3", {"class":"fc-black-700 fs-body1 mb4"})
+    location = html.find("h3", {"class":"fc-black-700 fs-body1 mb4"})
+    if company and location is not None:
+        company, location = html.find("h3", {"class":"fc-black-700 fs-body1 mb4"}).find_all("span", recursive=False)
+
+    company = company.get_text(strip=True)
+    location = location.get_text(strip=True)
+
+    job_id = html.find('div')['data-jobid']
+
+    return {
+        'title':title,
+        'company':company,
+        'location':location,
+        'apply_link': f'https://stackoverflow.com/jobs/{job_id}'
+    }
 
 def extract_jobs(last_page):
     jobs = []
@@ -23,7 +39,7 @@ def extract_jobs(last_page):
         print(f"Scrapping page {page}")
         result = requests.get(f'{URL}&pg={page+1}',str(headers))
         soup = BeautifulSoup(result.text, 'html.parser')
-        results = soup.find_all('div', {'class':'flex--item fl1'})
+        results = soup.find_all('div', {'class':'listResults'})
         for result in results:
             job = extract_job(result)
             jobs.append(job)
