@@ -11,12 +11,19 @@ def get_last_page():
     last_page=pages[-2].get_text(strip=True)
     return int(last_page)
 
+def extract_job(html):    
+    title = html.find('a', {'class':'s-link stretched-link'})
+    if title is not None:
+        title = html.find('a', {'class':'s-link stretched-link'}).get_text()
+    return {'title':title}
+
 def extract_jobs(last_page):
     jobs = []
-    for page in range(last_page):
-        result = requests.get(f'{URL}&pg={page+1}')
+    for page in range(1,last_page):
+        print(f"Scrapping page {page}")
+        result = requests.get(f'{URL}&pg={page+1}',str(headers))
         soup = BeautifulSoup(result.text, 'html.parser')
-        results = soup.find_all('div', {'class':'-job'})
+        results = soup.find_all('div', {'class':'flex--item fl1'})
         for result in results:
             job = extract_job(result)
             jobs.append(job)
